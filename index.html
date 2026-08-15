@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🚗 東海岸 4 天 3 夜家族自駕遊</title>
+  <!-- 引入業界最穩定的 CSV 解析套件 PapaParse -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     :root {
       --primary: #0284c7;
@@ -187,12 +189,6 @@
       font-weight: 600;
       text-decoration: none;
     }
-    .loading {
-      text-align: center;
-      padding: 40px;
-      color: var(--text-muted);
-      font-size: 1rem;
-    }
   </style>
 </head>
 <body>
@@ -204,7 +200,7 @@
     </header>
 
     <div class="status-bar">
-      <span class="sync-text" id="sync-status">⏳ 正在同步 Google 試算表...</span>
+      <span class="sync-text" id="sync-status">⏳ 正在連線 Google 試算表...</span>
       <button class="btn-sync" onclick="fetchLiveData()">🔄 即時同步</button>
     </div>
 
@@ -218,136 +214,54 @@
     </div>
 
     <!-- 內容呈現區 -->
-    <div id="content-container">
-      <div class="loading">⏳ 正在連線取得最新行程資料，請稍候...</div>
-    </div>
+    <div id="content-container"></div>
   </div>
 
   <script>
-    // 🔗 您的 Google 試算表 CSV 端點
+    // 🔗 您的 Google 試算表公開 CSV 網址
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQAY8BCfsJ2o8uJ40Rtr02qoKp9Yf2OKLdRROT_XVJH5mlG7EV-itdKxAxVwyBAbA/pub?output=csv";
 
-    let allTripData = [];
+    // 💡 內建離線完整資料庫（保證秒開、永不留白）
+    const DEFAULT_DATA = [
+      {"day": "Day 1", "date": "9/25 (五)", "time": "07:20-11:10", "title": "台北搭乘 EMU3000 直達台東車站", "route": "台鐵直達（408 車次）", "driveTime": "-", "stayTime": "-", "cost": "$783 ~ $936", "remark": "8/25 00:00 準時開搶 9/25, 9/28 車票"},
+      {"day": "Day 1", "date": "9/25 (五)", "time": "11:30-13:30", "title": "台東車站取車 ＋ 市區享用在地午餐", "route": "站前取車，大行李放後備箱", "driveTime": "-", "stayTime": "1.5~2小時", "cost": "$250 ~ $350", "remark": "租車 4 天（台東租、花蓮還）"},
+      {"day": "Day 1", "date": "9/25 (五)", "time": "13:30-17:30", "title": "台 9 線慢遊順遊（美濃冰品／鹿野神社／高台）", "route": "台東車站 -> 台9線 -> 鹿野", "driveTime": "約 45 分鐘", "stayTime": "3~3.5小時", "cost": "$100 ~ $200", "remark": "美濃冰品、鹿野神社、鹿野高台等"},
+      {"day": "Day 1", "date": "9/25 (五)", "time": "18:00", "title": "入住鹿野縱谷民宿 (Night 1)，享用特色晚餐", "route": "鹿野市區周邊", "driveTime": "-", "stayTime": "-", "cost": "$750 ~ $1,250/人", "remark": "住鹿野為隔天鸞山省去早起趕路壓力"},
+      {"day": "Day 2", "date": "9/26 (六)", "time": "08:00-08:40", "title": "民宿早餐退房，出發前往鸞山派出所集合", "route": "鹿野 -> 鸞山派出所", "driveTime": "約 25 分鐘", "stayTime": "-", "cost": "$80 ~ $100", "remark": "全團需備米酒1瓶+檳榔1包"},
+      {"day": "Day 2", "date": "9/26 (六)", "time": "08:50-13:30", "title": "鸞山森林博物館體驗（爬巨木＋柴燒風味午餐）", "route": "部落專人導覽與活動體驗", "driveTime": "-", "stayTime": "4.5小時", "cost": "$600 (門票體驗)", "remark": "務必提前預約；穿防滑好走球鞋"},
+      {"day": "Day 2", "date": "9/26 (六)", "time": "14:00-17:00", "title": "鸞山切回台 11 線海岸，順遊三仙台／石雨傘", "route": "鸞山 -> 台11線 -> 長濱", "driveTime": "約 1.5 小時", "stayTime": "1.5~2小時", "cost": "$100 ~ $200", "remark": "順遊小野柳、杉原灣或三仙台"},
+      {"day": "Day 2", "date": "9/26 (六)", "time": "17:30", "title": "入住長濱海景民宿 (Night 2)，享用海鮮大餐", "route": "長濱海邊民宿", "driveTime": "10 分鐘", "stayTime": "-", "cost": "$1,400 ~ $2,100/人", "remark": "晚上看太平洋星空、中秋賞月"},
+      {"day": "Day 3", "date": "9/27 (日)", "time": "08:30-10:00", "title": "漫步金剛大道看筆直海景，走玉長公路切回縱谷", "route": "長濱 -> 玉長公路 -> 玉里", "driveTime": "約 35 分鐘", "stayTime": "1~1.5小時", "cost": "$80 ~ $100", "remark": "金剛大道早晨遊客少、拍照極美"},
+      {"day": "Day 3", "date": "9/27 (日)", "time": "10:30-12:00", "title": "玉里市區漫步，享用在地名店「玉里麵」午餐", "route": "玉里市區", "driveTime": "-", "stayTime": "1.5小時", "cost": "$150 ~ $250", "remark": "先在市區吃飽後再開車上山"},
+      {"day": "Day 3", "date": "9/27 (日)", "time": "12:30-16:00", "title": "直上赤科山賞金針花海、汪家古厝與赤科三景", "route": "玉里 -> 赤科山", "driveTime": "約 40 分鐘(山路)", "stayTime": "3~3.5小時", "cost": "$100 ~ $200", "remark": "出發前確認最新花況與交管"},
+      {"day": "Day 3", "date": "9/27 (日)", "time": "16:30-17:30", "title": "下山返回玉里市區，入住玉里質感民宿 (Night 3)", "route": "赤科山 -> 玉里市區", "driveTime": "約 40 分鐘(下山)", "stayTime": "-", "cost": "$1,100 ~ $1,650/人", "remark": "晚餐品嚐玉里橋頭臭豆腐或縱谷美食"},
+      {"day": "Day 4", "date": "9/28 (一)", "time": "08:30-09:15", "title": "民宿早餐退房，沿台 9 線一路北上光復", "route": "玉里 -> 大農大富", "driveTime": "約 35 分鐘", "stayTime": "-", "cost": "$80 ~ $100", "remark": "一早出發避開午後艷陽"},
+      {"day": "Day 4", "date": "9/28 (一)", "time": "09:30-11:30", "title": "大農大富平地森林園區（租四人電動車遊綠廊）", "route": "園區內慢活騎行", "driveTime": "-", "stayTime": "2小時", "cost": "$150 ~ $200/人", "remark": "連假正常開放，綠色隧道芬多精"},
+      {"day": "Day 4", "date": "9/28 (一)", "time": "11:45-13:00", "title": "光復糖廠吃冰、看日式宿舍群 ＋ 享用特色午餐", "route": "大農大富 -> 光復糖廠", "driveTime": "約 10 分鐘", "stayTime": "1~1.5小時", "cost": "$200 ~ $300", "remark": "平路好走無負擔，長輩超愛"},
+      {"day": "Day 4", "date": "9/28 (一)", "time": "13:15-14:30", "title": "沿台 9 線北上至花蓮市區，採買名產伴手禮", "route": "光復 -> 花蓮市區", "driveTime": "約 50 分鐘", "stayTime": "1~1.5小時", "cost": "$300 ~ $500", "remark": "買麻糬、奶油酥條、在地點心"},
+      {"day": "Day 4", "date": "9/28 (一)", "time": "15:00", "title": "花蓮車站前加滿油、還車（甲租乙還）", "route": "花蓮市區 -> 花蓮車站", "driveTime": "約 10 分鐘", "stayTime": "-", "cost": "$2,875 ~ $3,700/人", "remark": "預留 30 分鐘還車與行李整理緩衝"},
+      {"day": "Day 4", "date": "9/28 (一)", "time": "16:00 以後", "title": "搭乘 EMU3000 新自強號直達台北（約 2.5 小時）", "route": "花蓮車站 -> 台北車站", "driveTime": "-", "stayTime": "約 2.5 小時", "cost": "$440 ~ $583", "remark": "推薦自強477/自強281/自強1/自強431車次"}
+    ];
+
+    let allTripData = DEFAULT_DATA;
     let currentFilter = 'ALL';
-
-    // 標準 CSV 解析器
-    function parseCSV(text) {
-      const p = '', row = [''];
-      const ret = [row];
-      let i = 0, r = 0, s = !0, l;
-      for (l of text) {
-        if ('"' === l) {
-          if (s && l === p) row[i] += l;
-          s = !s;
-        } else if (',' === l && s) l = row[++i] = '';
-        else if ('\n' === l && s) {
-          if ('\r' === p) row[i] = row[i].slice(0, -1);
-          row = [l = ''];
-          ret[++r] = row;
-          i = 0;
-        } else row[i] += l;
-        p = l;
-      }
-      return ret;
-    }
-
-    async function fetchLiveData() {
-      const statusEl = document.getElementById('sync-status');
-      const contentEl = document.getElementById('content-container');
-      statusEl.innerText = "⏳ 正在同步最新資料...";
-
-      const targetUrl = `${CSV_URL}&_t=${Date.now()}`;
-      let rawText = null;
-
-      // 嘗試 1：直接連線
-      try {
-        const res = await fetch(targetUrl);
-        if (res.ok) rawText = await res.text();
-      } catch (e) {
-        console.warn("直接連線被瀏覽器本機 CORS 限制阻擋，自動切換至備援通道...", e);
-      }
-
-      // 嘗試 2：若在本機打開 (file://)，自動使用 CORS 代理通道
-      if (!rawText) {
-        try {
-          const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-          const res = await fetch(proxyUrl);
-          if (res.ok) rawText = await res.text();
-        } catch (e) {
-          console.warn("Proxy 1 失敗，嘗試 Proxy 2...", e);
-        }
-      }
-
-      // 嘗試 3：第二備援代理通道
-      if (!rawText) {
-        try {
-          const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`;
-          const res = await fetch(proxyUrl);
-          if (res.ok) rawText = await res.text();
-        } catch (e) {
-          console.error("所有連線通道均失敗:", e);
-        }
-      }
-
-      if (!rawText) {
-        statusEl.innerText = `❌ 同步失敗`;
-        contentEl.innerHTML = `<div class="loading" style="color:#ef4444;">載入失敗：請確認電腦已連上網路，並確認 Google 試算表已發布。</div>`;
-        return;
-      }
-
-      try {
-        const rows = parseCSV(rawText);
-        // 過濾空行與非行程行
-        const validRows = rows.filter(r => r && r.length >= 4 && r[0].trim() !== "" && !r[0].includes("順序"));
-        
-        if (validRows.length <= 1) {
-          contentEl.innerHTML = `<div class="loading">試算表內目前無行程資料。</div>`;
-          return;
-        }
-
-        // 跳過標題列
-        allTripData = validRows.slice(1).map(r => ({
-          day: r[0] ? r[0].trim() : "",
-          date: r[1] ? r[1].trim() : "",
-          time: r[2] ? r[2].trim() : "",
-          title: r[3] ? r[3].trim() : "",
-          route: r[4] ? r[4].trim() : "",
-          driveTime: r[5] ? r[5].trim() : "",
-          stayTime: r[6] ? r[6].trim() : "",
-          cost: r[7] ? r[7].trim() : "",
-          remark: r[8] ? r[8].trim() : "",
-          remarkExtra: r[9] ? r[9].trim() : ""
-        }));
-
-        renderItinerary();
-
-        const now = new Date();
-        const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-        statusEl.innerText = `✅ 已同步最新資料（${timeStr}）`;
-
-      } catch (err) {
-        console.error(err);
-        statusEl.innerText = `❌ 解析失敗`;
-        contentEl.innerHTML = `<div class="loading" style="color:#ef4444;">資料解析失敗：${err.message}</div>`;
-      }
-    }
 
     function renderItinerary() {
       const contentEl = document.getElementById('content-container');
       
       const filtered = (currentFilter === 'ALL') 
         ? allTripData 
-        : allTripData.filter(item => item.day.includes(currentFilter));
+        : allTripData.filter(item => (item.day && item.day.includes(currentFilter)) || (item.date && item.date.includes(currentFilter)));
 
       if (filtered.length === 0) {
-        contentEl.innerHTML = `<div class="loading">此分類目前無行程。</div>`;
+        contentEl.innerHTML = `<div style="text-align:center; padding:40px; color:#64748b;">此分類目前無行程。</div>`;
         return;
       }
 
       // 依天數分組
       const groups = {};
       filtered.forEach(item => {
-        const key = `${item.day}__${item.date}`;
+        const key = `${item.day || '行程'}__${item.date || ''}`;
         if (!groups[key]) groups[key] = [];
         groups[key].push(item);
       });
@@ -359,7 +273,7 @@
           <div class="day-section">
             <div class="day-header">
               <span class="day-badge">${dayName}</span>
-              <span class="day-date">${dateName}</span>
+              ${dateName ? `<span class="day-date">${dateName}</span>` : ''}
             </div>
         `;
 
@@ -380,11 +294,10 @@
                 ${item.cost && item.cost !== '-' && item.cost !== '0' ? `<span class="tag cost">💰 ${item.cost}</span>` : ''}
               </div>
 
-              ${(item.route || item.remark || item.remarkExtra) ? `
+              ${(item.route || item.remark) ? `
                 <div class="item-detail">
                   ${item.route && item.route !== '-' ? `<div class="item-detail-row">📍 <strong>動線：</strong>${item.route}</div>` : ''}
-                  ${item.remark ? `<div class="item-detail-row">💡 <strong>備註：</strong>${item.remark}</div>` : ''}
-                  ${item.remarkExtra ? `<div class="item-detail-row">📌 <strong>說明：</strong>${item.remarkExtra}</div>` : ''}
+                  ${item.remark && item.remark !== '-' ? `<div class="item-detail-row">💡 <strong>備註：</strong>${item.remark}</div>` : ''}
                 </div>
               ` : ''}
 
@@ -407,7 +320,56 @@
       renderItinerary();
     }
 
-    window.onload = fetchLiveData;
+    function fetchLiveData() {
+      const statusEl = document.getElementById('sync-status');
+      statusEl.innerText = "⏳ 正在同步 Google 試算表...";
+
+      Papa.parse(CSV_URL, {
+        download: true,
+        header: false,
+        skipEmptyLines: true,
+        complete: function(results) {
+          if (results.data && results.data.length > 1) {
+            const rows = results.data;
+            // 尋找標題列所在的 index
+            let headerIdx = rows.findIndex(r => r.some(cell => typeof cell === 'string' && (cell.includes('天數') || cell.includes('行程'))));
+            if (headerIdx === -1) headerIdx = 0;
+
+            const dataRows = rows.slice(headerIdx + 1).filter(r => r[0] && r[0].trim() !== "" && !r[0].includes("順序"));
+
+            if (dataRows.length > 0) {
+              allTripData = dataRows.map(r => ({
+                day: r[0] ? r[0].trim() : "",
+                date: r[1] ? r[1].trim() : "",
+                time: r[2] ? r[2].trim() : "",
+                title: r[3] ? r[3].trim() : "",
+                route: r[4] ? r[4].trim() : "",
+                driveTime: r[5] ? r[5].trim() : "",
+                stayTime: r[6] ? r[6].trim() : "",
+                cost: r[7] ? r[7].trim() : "",
+                remark: r[8] ? r[8].trim() : ""
+              }));
+
+              renderItinerary();
+              const now = new Date();
+              const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+              statusEl.innerText = `✅ 已同步最新 Google 試算表（${timeStr}）`;
+              return;
+            }
+          }
+          statusEl.innerText = `✅ 已載入預設行程資料`;
+        },
+        error: function(err) {
+          console.warn("無法取得線上試算表，使用預設行程資料", err);
+          statusEl.innerText = `✅ 已載入預設行程（點即時同步可重試）`;
+        }
+      });
+    }
+
+    // 1. 頁面開啟時 0 秒立即顯示預設行程，長輩打開秒看
+    renderItinerary();
+    // 2. 背景自動連線 Google 試算表拉取最新變更
+    fetchLiveData();
   </script>
 </body>
 </html>
