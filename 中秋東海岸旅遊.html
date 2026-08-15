@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🚗 東海岸 4 天 3 夜家族自駕遊</title>
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --accent: #e11d48;
+      --tag-bg: #f1f5f9;
+      --border: #e2e8f0;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      padding: 16px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      padding: 20px 10px;
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      border-radius: 16px;
+      color: white;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);
+    }
+    header h1 { font-size: 1.5rem; margin-bottom: 6px; }
+    header p { font-size: 0.9rem; opacity: 0.95; }
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 10px 16px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    .sync-text { font-size: 0.82rem; color: var(--text-muted); }
+    .btn-sync {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.2s;
+    }
+    .btn-sync:hover { background: var(--primary-dark); }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .tab-btn {
+      flex: 1;
+      min-width: 70px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-align: center;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .day-section { margin-bottom: 24px; }
+    .day-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding-left: 4px;
+    }
+    .day-badge {
+      background: var(--primary);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.95rem;
+    }
+    .day-date {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .item-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    .item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .item-time {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .item-title {
+      font-size: 1.08rem;
+      font-weight: bold;
+      color: var(--text-main);
+      margin: 4px 0 8px 0;
+    }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .tag {
+      background: var(--tag-bg);
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+    .tag.cost {
+      background: #fef2f2;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .item-detail {
+      font-size: 0.88rem;
+      color: #334155;
+      background: #f8fafc;
+      padding: 10px;
+      border-radius: 8px;
+      border-left: 3px solid var(--primary);
+      margin-top: 6px;
+    }
+    .item-detail-row { margin-bottom: 4px; }
+    .item-detail-row:last-child { margin-bottom: 0; }
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 10px;
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>🚗 東海岸 4 天 3 夜家族自駕遊</h1>
+      <p>台東 ➔ 鹿野 ➔ 鸞山 ➔ 長濱 ➔ 赤科山 ➔ 大農大富 ➔ 花蓮</p>
+    </header>
+
+    <div class="status-bar">
+      <span class="sync-text" id="sync-status">⏳ 正在同步 Google 試算表...</span>
+      <button class="btn-sync" onclick="fetchLiveData()">🔄 即時同步</button>
+    </div>
+
+    <!-- 頁籤按鈕 -->
+    <div class="tabs" id="tab-container">
+      <button class="tab-btn active" onclick="filterDay('ALL')">全部行程</button>
+      <button class="tab-btn" onclick="filterDay('Day 1')">Day 1</button>
+      <button class="tab-btn" onclick="filterDay('Day 2')">Day 2</button>
+      <button class="tab-btn" onclick="filterDay('Day 3')">Day 3</button>
+      <button class="tab-btn" onclick="filterDay('Day 4')">Day 4</button>
+    </div>
+
+    <!-- 內容呈現區 -->
+    <div id="content-container">
+      <div class="loading">⏳ 正在連線取得最新行程資料，請稍候...</div>
+    </div>
+  </div>
+
+  <script>
+    // 🔗 您的 Google 試算表 CSV 端點
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQAY8BCfsJ2o8uJ40Rtr02qoKp9Yf2OKLdRROT_XVJH5mlG7EV-itdKxAxVwyBAbA/pub?output=csv";
+
+    let allTripData = [];
+    let currentFilter = 'ALL';
+
+    // 標準 CSV 解析器
+    function parseCSV(text) {
+      const p = '', row = [''];
+      const ret = [row];
+      let i = 0, r = 0, s = !0, l;
+      for (l of text) {
+        if ('"' === l) {
+          if (s && l === p) row[i] += l;
+          s = !s;
+        } else if (',' === l && s) l = row[++i] = '';
+        else if ('\n' === l && s) {
+          if ('\r' === p) row[i] = row[i].slice(0, -1);
+          row = [l = ''];
+          ret[++r] = row;
+          i = 0;
+        } else row[i] += l;
+        p = l;
+      }
+      return ret;
+    }
+
+    async function fetchLiveData() {
+      const statusEl = document.getElementById('sync-status');
+      const contentEl = document.getElementById('content-container');
+      statusEl.innerText = "⏳ 正在同步最新資料...";
+
+      const targetUrl = `${CSV_URL}&_t=${Date.now()}`;
+      let rawText = null;
+
+      // 嘗試 1：直接連線
+      try {
+        const res = await fetch(targetUrl);
+        if (res.ok) rawText = await res.text();
+      } catch (e) {
+        console.warn("直接連線被瀏覽器本機 CORS 限制阻擋，自動切換至備援通道...", e);
+      }
+
+      // 嘗試 2：若在本機打開 (file://)，自動使用 CORS 代理通道
+      if (!rawText) {
+        try {
+          const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+          const res = await fetch(proxyUrl);
+          if (res.ok) rawText = await res.text();
+        } catch (e) {
+          console.warn("Proxy 1 失敗，嘗試 Proxy 2...", e);
+        }
+      }
+
+      // 嘗試 3：第二備援代理通道
+      if (!rawText) {
+        try {
+          const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`;
+          const res = await fetch(proxyUrl);
+          if (res.ok) rawText = await res.text();
+        } catch (e) {
+          console.error("所有連線通道均失敗:", e);
+        }
+      }
+
+      if (!rawText) {
+        statusEl.innerText = `❌ 同步失敗`;
+        contentEl.innerHTML = `<div class="loading" style="color:#ef4444;">載入失敗：請確認電腦已連上網路，並確認 Google 試算表已發布。</div>`;
+        return;
+      }
+
+      try {
+        const rows = parseCSV(rawText);
+        // 過濾空行與非行程行
+        const validRows = rows.filter(r => r && r.length >= 4 && r[0].trim() !== "" && !r[0].includes("順序"));
+        
+        if (validRows.length <= 1) {
+          contentEl.innerHTML = `<div class="loading">試算表內目前無行程資料。</div>`;
+          return;
+        }
+
+        // 跳過標題列
+        allTripData = validRows.slice(1).map(r => ({
+          day: r[0] ? r[0].trim() : "",
+          date: r[1] ? r[1].trim() : "",
+          time: r[2] ? r[2].trim() : "",
+          title: r[3] ? r[3].trim() : "",
+          route: r[4] ? r[4].trim() : "",
+          driveTime: r[5] ? r[5].trim() : "",
+          stayTime: r[6] ? r[6].trim() : "",
+          cost: r[7] ? r[7].trim() : "",
+          remark: r[8] ? r[8].trim() : "",
+          remarkExtra: r[9] ? r[9].trim() : ""
+        }));
+
+        renderItinerary();
+
+        const now = new Date();
+        const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+        statusEl.innerText = `✅ 已同步最新資料（${timeStr}）`;
+
+      } catch (err) {
+        console.error(err);
+        statusEl.innerText = `❌ 解析失敗`;
+        contentEl.innerHTML = `<div class="loading" style="color:#ef4444;">資料解析失敗：${err.message}</div>`;
+      }
+    }
+
+    function renderItinerary() {
+      const contentEl = document.getElementById('content-container');
+      
+      const filtered = (currentFilter === 'ALL') 
+        ? allTripData 
+        : allTripData.filter(item => item.day.includes(currentFilter));
+
+      if (filtered.length === 0) {
+        contentEl.innerHTML = `<div class="loading">此分類目前無行程。</div>`;
+        return;
+      }
+
+      // 依天數分組
+      const groups = {};
+      filtered.forEach(item => {
+        const key = `${item.day}__${item.date}`;
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(item);
+      });
+
+      let html = "";
+      for (const groupKey in groups) {
+        const [dayName, dateName] = groupKey.split('__');
+        html += `
+          <div class="day-section">
+            <div class="day-header">
+              <span class="day-badge">${dayName}</span>
+              <span class="day-date">${dateName}</span>
+            </div>
+        `;
+
+        groups[groupKey].forEach(item => {
+          const mapQuery = encodeURIComponent(item.title.replace(/\(.*?\)/g, ''));
+          const mapUrl = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
+
+          html += `
+            <div class="item-card">
+              <div class="item-top">
+                <span class="item-time">⏰ ${item.time || '行程'}</span>
+              </div>
+              <div class="item-title">${item.title}</div>
+              
+              <div class="tags">
+                ${item.driveTime && item.driveTime !== '-' ? `<span class="tag">🚗 車程: ${item.driveTime}</span>` : ''}
+                ${item.stayTime && item.stayTime !== '-' ? `<span class="tag">⏳ 建議停留: ${item.stayTime}</span>` : ''}
+                ${item.cost && item.cost !== '-' && item.cost !== '0' ? `<span class="tag cost">💰 ${item.cost}</span>` : ''}
+              </div>
+
+              ${(item.route || item.remark || item.remarkExtra) ? `
+                <div class="item-detail">
+                  ${item.route && item.route !== '-' ? `<div class="item-detail-row">📍 <strong>動線：</strong>${item.route}</div>` : ''}
+                  ${item.remark ? `<div class="item-detail-row">💡 <strong>備註：</strong>${item.remark}</div>` : ''}
+                  ${item.remarkExtra ? `<div class="item-detail-row">📌 <strong>說明：</strong>${item.remarkExtra}</div>` : ''}
+                </div>
+              ` : ''}
+
+              <a href="${mapUrl}" target="_blank" class="nav-btn">📍 Google 地圖導航</a>
+            </div>
+          `;
+        });
+
+        html += `</div>`;
+      }
+
+      contentEl.innerHTML = html;
+    }
+
+    function filterDay(day) {
+      currentFilter = day;
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.innerText.includes(day) || (day === 'ALL' && btn.innerText === '全部行程'));
+      });
+      renderItinerary();
+    }
+
+    window.onload = fetchLiveData;
+  </script>
+</body>
+</html>
