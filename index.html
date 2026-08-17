@@ -16,6 +16,8 @@
       --text-main: #0f172a;
       --text-muted: #64748b;
       --accent: #e11d48;
+      --distance-bg: #fef3c7;
+      --distance-text: #92400e;
       --tag-bg: #f1f5f9;
       --border: #e2e8f0;
       --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -159,6 +161,12 @@
       padding: 3px 8px;
       border-radius: 6px;
     }
+    .tag.distance {
+      background: var(--distance-bg);
+      color: var(--distance-text);
+      font-weight: 600;
+      border: 1px solid #fde68a;
+    }
     .tag.cost {
       background: #fef2f2;
       color: var(--accent);
@@ -221,30 +229,53 @@
     // 🔗 您的 Google 試算表公開 CSV 網址
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQAY8BCfsJ2o8uJ40Rtr02qoKp9Yf2OKLdRROT_XVJH5mlG7EV-itdKxAxVwyBAbA/pub?output=csv";
 
-    // 💡 內建離線完整資料庫（保證秒開、永不留白）
+    // 💡 內建最新版完整資料庫（含公里數，保證秒開無縫載入）
     const DEFAULT_DATA = [
-      {"day": "Day 1", "date": "9/25 (五)", "time": "07:20-11:10", "title": "台北搭乘 EMU3000 直達台東車站", "route": "台鐵直達（408 車次）", "driveTime": "-", "stayTime": "-", "cost": "$783 ~ $936", "remark": "8/25 00:00 準時開搶 9/25, 9/28 車票"},
-      {"day": "Day 1", "date": "9/25 (五)", "time": "11:30-13:30", "title": "台東車站取車 ＋ 市區享用在地午餐", "route": "站前取車，大行李放後備箱", "driveTime": "-", "stayTime": "1.5~2小時", "cost": "$250 ~ $350", "remark": "租車 4 天（台東租、花蓮還）"},
-      {"day": "Day 1", "date": "9/25 (五)", "time": "13:30-17:30", "title": "台 9 線慢遊順遊（美濃冰品／鹿野神社／高台）", "route": "台東車站 -> 台9線 -> 鹿野", "driveTime": "約 45 分鐘", "stayTime": "3~3.5小時", "cost": "$100 ~ $200", "remark": "美濃冰品、鹿野神社、鹿野高台等"},
-      {"day": "Day 1", "date": "9/25 (五)", "time": "18:00", "title": "入住鹿野縱谷民宿 (Night 1)，享用特色晚餐", "route": "鹿野市區周邊", "driveTime": "-", "stayTime": "-", "cost": "$750 ~ $1,250/人", "remark": "住鹿野為隔天鸞山省去早起趕路壓力"},
-      {"day": "Day 2", "date": "9/26 (六)", "time": "08:00-08:40", "title": "民宿早餐退房，出發前往鸞山派出所集合", "route": "鹿野 -> 鸞山派出所", "driveTime": "約 25 分鐘", "stayTime": "-", "cost": "$80 ~ $100", "remark": "全團需備米酒1瓶+檳榔1包"},
-      {"day": "Day 2", "date": "9/26 (六)", "time": "08:50-13:30", "title": "鸞山森林博物館體驗（爬巨木＋柴燒風味午餐）", "route": "部落專人導覽與活動體驗", "driveTime": "-", "stayTime": "4.5小時", "cost": "$600 (門票體驗)", "remark": "務必提前預約；穿防滑好走球鞋"},
-      {"day": "Day 2", "date": "9/26 (六)", "time": "14:00-17:00", "title": "鸞山切回台 11 線海岸，順遊三仙台／石雨傘", "route": "鸞山 -> 台11線 -> 長濱", "driveTime": "約 1.5 小時", "stayTime": "1.5~2小時", "cost": "$100 ~ $200", "remark": "順遊小野柳、杉原灣或三仙台"},
-      {"day": "Day 2", "date": "9/26 (六)", "time": "17:30", "title": "入住長濱海景民宿 (Night 2)，享用海鮮大餐", "route": "長濱海邊民宿", "driveTime": "10 分鐘", "stayTime": "-", "cost": "$1,400 ~ $2,100/人", "remark": "晚上看太平洋星空、中秋賞月"},
-      {"day": "Day 3", "date": "9/27 (日)", "time": "08:30-10:00", "title": "漫步金剛大道看筆直海景，走玉長公路切回縱谷", "route": "長濱 -> 玉長公路 -> 玉里", "driveTime": "約 35 分鐘", "stayTime": "1~1.5小時", "cost": "$80 ~ $100", "remark": "金剛大道早晨遊客少、拍照極美"},
-      {"day": "Day 3", "date": "9/27 (日)", "time": "10:30-12:00", "title": "玉里市區漫步，享用在地名店「玉里麵」午餐", "route": "玉里市區", "driveTime": "-", "stayTime": "1.5小時", "cost": "$150 ~ $250", "remark": "先在市區吃飽後再開車上山"},
-      {"day": "Day 3", "date": "9/27 (日)", "time": "12:30-16:00", "title": "直上赤科山賞金針花海、汪家古厝與赤科三景", "route": "玉里 -> 赤科山", "driveTime": "約 40 分鐘(山路)", "stayTime": "3~3.5小時", "cost": "$100 ~ $200", "remark": "出發前確認最新花況與交管"},
-      {"day": "Day 3", "date": "9/27 (日)", "time": "16:30-17:30", "title": "下山返回玉里市區，入住玉里質感民宿 (Night 3)", "route": "赤科山 -> 玉里市區", "driveTime": "約 40 分鐘(下山)", "stayTime": "-", "cost": "$1,100 ~ $1,650/人", "remark": "晚餐品嚐玉里橋頭臭豆腐或縱谷美食"},
-      {"day": "Day 4", "date": "9/28 (一)", "time": "08:30-09:15", "title": "民宿早餐退房，沿台 9 線一路北上光復", "route": "玉里 -> 大農大富", "driveTime": "約 35 分鐘", "stayTime": "-", "cost": "$80 ~ $100", "remark": "一早出發避開午後艷陽"},
-      {"day": "Day 4", "date": "9/28 (一)", "time": "09:30-11:30", "title": "大農大富平地森林園區（租四人電動車遊綠廊）", "route": "園區內慢活騎行", "driveTime": "-", "stayTime": "2小時", "cost": "$150 ~ $200/人", "remark": "連假正常開放，綠色隧道芬多精"},
-      {"day": "Day 4", "date": "9/28 (一)", "time": "11:45-13:00", "title": "光復糖廠吃冰、看日式宿舍群 ＋ 享用特色午餐", "route": "大農大富 -> 光復糖廠", "driveTime": "約 10 分鐘", "stayTime": "1~1.5小時", "cost": "$200 ~ $300", "remark": "平路好走無負擔，長輩超愛"},
-      {"day": "Day 4", "date": "9/28 (一)", "time": "13:15-14:30", "title": "沿台 9 線北上至花蓮市區，採買名產伴手禮", "route": "光復 -> 花蓮市區", "driveTime": "約 50 分鐘", "stayTime": "1~1.5小時", "cost": "$300 ~ $500", "remark": "買麻糬、奶油酥條、在地點心"},
-      {"day": "Day 4", "date": "9/28 (一)", "time": "15:00", "title": "花蓮車站前加滿油、還車（甲租乙還）", "route": "花蓮市區 -> 花蓮車站", "driveTime": "約 10 分鐘", "stayTime": "-", "cost": "$2,875 ~ $3,700/人", "remark": "預留 30 分鐘還車與行李整理緩衝"},
-      {"day": "Day 4", "date": "9/28 (一)", "time": "16:00 以後", "title": "搭乘 EMU3000 新自強號直達台北（約 2.5 小時）", "route": "花蓮車站 -> 台北車站", "driveTime": "-", "stayTime": "約 2.5 小時", "cost": "$440 ~ $583", "remark": "推薦自強477/自強281/自強1/自強431車次"}
+      {"day": "Day 1", "date": "9/25 (五)", "time": "07:20-11:10", "title": "台北搭乘 EMU3000 直達台東車站", "route": "台鐵直達（408 車次）", "driveTime": "-", "distance": "", "stayTime": "-", "cost": "$783 ~ $936", "remark": "8/25 00:00 準時開搶 9/25, 9/28 車票"},
+      {"day": "Day 1", "date": "9/25 (五)", "time": "11:30-13:30", "title": "台東車站取車 ＋ 市區享用在地午餐", "route": "站前取車，大行李放後備箱", "driveTime": "-", "distance": "", "stayTime": "1.5~2小時", "cost": "$250 ~ $350", "remark": "租車 4 天（台東租、花蓮還）"},
+      {"day": "Day 1", "date": "9/25 (五)", "time": "13:30-17:30", "title": "台 9 線慢遊順遊（美濃冰品／鹿野神社／高台）", "route": "台東車站 -> 台9線 -> 鹿野", "driveTime": "約 45 分鐘", "distance": "29.4", "stayTime": "3~3.5小時", "cost": "$100 ~ $200", "remark": "沿途景點庫見【沿途景點庫】Sheet"},
+      {"day": "Day 1", "date": "9/25 (五)", "time": "18:00", "title": "入住鹿野縱谷民宿 (Night 1)，享用特色晚餐", "route": "鹿野市區周邊", "driveTime": "-", "distance": "", "stayTime": "-", "cost": "$750 ~ $1,250/人", "remark": "住鹿野為隔天鸞山省去早起趕路壓力"},
+      {"day": "Day 2", "date": "9/26 (六)", "time": "08:00-08:40", "title": "民宿早餐退房，出發前往鸞山派出所集合", "route": "鹿野 -> 鸞山派出所", "driveTime": "約 25 分鐘", "distance": "6.8", "stayTime": "-", "cost": "$80 ~ $100", "remark": "全團需備米酒1瓶+檳榔1包"},
+      {"day": "Day 2", "date": "9/26 (六)", "time": "08:50-13:30", "title": "鸞山森林博物館體驗（爬巨木＋柴燒風味午餐）", "route": "部落專人導覽與活動體驗", "driveTime": "-", "distance": "", "stayTime": "4.5小時", "cost": "$600 (門票體驗)", "remark": "務必提前預約；穿防滑好走球鞋"},
+      {"day": "Day 2", "date": "9/26 (六)", "time": "14:00-17:00", "title": "鸞山切回台 11 線海岸，順遊三仙台／石雨傘", "route": "鸞山 -> 台11線 -> 長濱", "driveTime": "約 1.5 小時", "distance": "105(海線)/85(縱谷)", "stayTime": "1.5~2小時", "cost": "$100 ~ $200", "remark": "看當天情況選擇1個或數個海邊點，見【沿途景點庫】Sheet"},
+      {"day": "Day 2", "date": "9/26 (六)", "time": "17:30", "title": "入住長濱海景民宿 (Night 2)，享用海鮮大餐", "route": "長濱海邊民宿", "driveTime": "10 分鐘", "distance": "", "stayTime": "-", "cost": "$1,400 ~ $2,100/人", "remark": "晚上看太平洋星空、中秋賞月"},
+      {"day": "Day 3", "date": "9/27 (日)", "time": "08:30-10:00", "title": "漫步金剛大道看筆直海景，走玉長公路切回縱谷", "route": "長濱 -> 玉長公路 -> 玉里", "driveTime": "約 35 分鐘", "distance": "51.5", "stayTime": "1~1.5小時", "cost": "$80 ~ $100", "remark": "金剛大道早晨遊客少、拍照極美(出發時間隨情況調整)"},
+      {"day": "Day 3", "date": "9/27 (日)", "time": "10:30-12:00", "title": "玉里市區漫步，享用在地名店「玉里麵」午餐", "route": "玉里市區", "driveTime": "-", "distance": "", "stayTime": "1.5小時", "cost": "$150 ~ $250", "remark": "先在市區吃飽後再開車上山"},
+      {"day": "Day 3", "date": "9/27 (日)", "time": "12:30-16:00", "title": "直上赤科山賞金針花海、汪家古厝與赤科三景", "route": "玉里 -> 赤科山", "driveTime": "約 40 分鐘(山路)", "distance": "5.8", "stayTime": "3~3.5小時", "cost": "$100 ~ $200", "remark": "出發前確認最新花況與交管"},
+      {"day": "Day 3", "date": "9/27 (日)", "time": "16:30-17:30", "title": "下山返回玉里市區，入住玉里質感民宿 (Night 3)", "route": "赤科山 -> 玉里市區", "driveTime": "約 40 分鐘(下山)", "distance": "5.8", "stayTime": "-", "cost": "$1,100 ~ $1,650/人", "remark": "晚餐品嚐玉里橋頭臭豆腐或縱谷美食"},
+      {"day": "Day 4", "date": "9/28 (一)", "time": "08:30-09:15", "title": "民宿早餐退房，沿台 9 線一路北上光復", "route": "玉里 -> 大農大富", "driveTime": "約 35 分鐘", "distance": "41.4", "stayTime": "-", "cost": "$80 ~ $100", "remark": "一早出發避開午後艷陽"},
+      {"day": "Day 4", "date": "9/28 (一)", "time": "09:30-11:30", "title": "大農大富平地森林園區（租四人電動車遊綠廊）", "route": "園區內慢活騎行", "driveTime": "-", "distance": "", "stayTime": "2小時", "cost": "$150 ~ $200/人", "remark": "連假正常開放，綠色隧道芬多精"},
+      {"day": "Day 4", "date": "9/28 (一)", "time": "11:45-13:00", "title": "光復糖廠吃冰、看日式宿舍群 ＋ 享用特色午餐", "route": "大農大富 -> 光復糖廠", "driveTime": "約 10 分鐘", "distance": "6.5", "stayTime": "1~1.5小時", "cost": "$200 ~ $300", "remark": "平路好走無負擔，長輩超愛"},
+      {"day": "Day 4", "date": "9/28 (一)", "time": "13:15-14:30", "title": "沿台 9 線北上至花蓮市區，採買名產伴手禮", "route": "光復 -> 花蓮市區", "driveTime": "約 50 分鐘", "distance": "47.7", "stayTime": "1~1.5小時", "cost": "$300 ~ $500", "remark": "買麻糬、奶油酥條、在地點心"},
+      {"day": "Day 4", "date": "9/28 (一)", "time": "15:00", "title": "花蓮車站前加滿油、還車（甲租乙還）", "route": "花蓮市區 -> 花蓮車站", "driveTime": "約 10 分鐘", "distance": "", "stayTime": "-", "cost": "$2,875 ~ $3,700/人", "remark": "預留 30 分鐘還車與行李整理緩衝"},
+      {"day": "Day 4", "date": "9/28 (一)", "time": "16:00 以後", "title": "搭乘 EMU3000 新自強號直達台北（約 2.5 小時）", "route": "花蓮車站 -> 台北車站", "driveTime": "-", "distance": "", "stayTime": "約 2.5 小時", "cost": "$440 ~ $583", "remark": "推薦自強477/自強281/自強1/自強431車次"}
     ];
 
     let allTripData = DEFAULT_DATA;
     let currentFilter = 'ALL';
+
+    // 智慧欄位對應建構器（不管 Excel 順序怎麼改，自動認標題）
+    function buildHeaderMap(headers) {
+      const map = {};
+      headers.forEach((h, i) => {
+        if (!h) return;
+        const name = String(h).trim();
+        if (name.includes('天數')) map.day = i;
+        else if (name.includes('日期')) map.date = i;
+        else if (name.includes('時間')) map.time = i;
+        else if (name.includes('特色') || name.includes('玩法')) map.feature = i;
+        else if (name.includes('景點名稱') || name.includes('停靠站') || name.includes('行程規劃') || name.includes('主題') || name.includes('景點/停靠站')) map.title = i;
+        else if (name.includes('景點') || name.includes('行程')) { if (map.title === undefined) map.title = i; }
+        else if (name.includes('動線') || name.includes('交通') || name.includes('路線')) map.route = i;
+        else if (name.includes('車程')) map.driveTime = i;
+        else if (name.includes('公里') || name.includes('km') || name.includes('距離')) map.distance = i;
+        else if (name.includes('停留')) map.stayTime = i;
+        else if (name.includes('花費') || name.includes('費用') || name.includes('預算')) map.cost = i;
+        else if (name.includes('備註') || name.includes('提醒') || name.includes('Remark') || name.includes('說明')) map.remark = i;
+        else if (name.includes('地址') || name.includes('位置')) map.address = i;
+      });
+      return map;
+    }
 
     function renderItinerary() {
       const contentEl = document.getElementById('content-container');
@@ -281,6 +312,12 @@
           const mapQuery = encodeURIComponent(item.title.replace(/\(.*?\)/g, ''));
           const mapUrl = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
 
+          // 處理公里數文字格式
+          let distText = item.distance ? item.distance.trim() : "";
+          if (distText && !isNaN(distText)) {
+            distText = `${distText} km`;
+          }
+
           html += `
             <div class="item-card">
               <div class="item-top">
@@ -290,6 +327,7 @@
               
               <div class="tags">
                 ${item.driveTime && item.driveTime !== '-' ? `<span class="tag">🚗 車程: ${item.driveTime}</span>` : ''}
+                ${distText && distText !== '-' && distText !== '起點' ? `<span class="tag distance">🛣️ 里程: ${distText}</span>` : ''}
                 ${item.stayTime && item.stayTime !== '-' ? `<span class="tag">⏳ 建議停留: ${item.stayTime}</span>` : ''}
                 ${item.cost && item.cost !== '-' && item.cost !== '0' ? `<span class="tag cost">💰 ${item.cost}</span>` : ''}
               </div>
@@ -331,24 +369,30 @@
         complete: function(results) {
           if (results.data && results.data.length > 1) {
             const rows = results.data;
-            // 尋找標題列所在的 index
+            
+            // 尋找標題列
             let headerIdx = rows.findIndex(r => r.some(cell => typeof cell === 'string' && (cell.includes('天數') || cell.includes('行程'))));
             if (headerIdx === -1) headerIdx = 0;
 
+            const headerMap = buildHeaderMap(rows[headerIdx]);
             const dataRows = rows.slice(headerIdx + 1).filter(r => r[0] && r[0].trim() !== "" && !r[0].includes("順序"));
 
             if (dataRows.length > 0) {
-              allTripData = dataRows.map(r => ({
-                day: r[0] ? r[0].trim() : "",
-                date: r[1] ? r[1].trim() : "",
-                time: r[2] ? r[2].trim() : "",
-                title: r[3] ? r[3].trim() : "",
-                route: r[4] ? r[4].trim() : "",
-                driveTime: r[5] ? r[5].trim() : "",
-                stayTime: r[6] ? r[6].trim() : "",
-                cost: r[7] ? r[7].trim() : "",
-                remark: r[8] ? r[8].trim() : ""
-              }));
+              allTripData = dataRows.map(r => {
+                const getVal = (f) => (headerMap[f] !== undefined && r[headerMap[f]]) ? String(r[headerMap[f]]).trim() : "";
+                return {
+                  day: getVal('day'),
+                  date: getVal('date'),
+                  time: getVal('time'),
+                  title: getVal('title'),
+                  route: getVal('route'),
+                  driveTime: getVal('driveTime'),
+                  distance: getVal('distance'),
+                  stayTime: getVal('stayTime'),
+                  cost: getVal('cost'),
+                  remark: getVal('remark')
+                };
+              });
 
               renderItinerary();
               const now = new Date();
@@ -366,9 +410,9 @@
       });
     }
 
-    // 1. 頁面開啟時 0 秒立即顯示預設行程，長輩打開秒看
+    // 1. 頁面開啟 0 秒立即顯示
     renderItinerary();
-    // 2. 背景自動連線 Google 試算表拉取最新變更
+    // 2. 自動連線 Google 試算表
     fetchLiveData();
   </script>
 </body>
